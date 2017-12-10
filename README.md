@@ -1,8 +1,8 @@
-#Brain Extension
+# Brain Extension
 
 A knoweldge base written in Java
 
-##Overall Objective
+## Overall Objective
 
 There are applications like Evernote. Howver, I started my own application approximately 17 years ago. At that time I built it in Perl. It had a range of modules like: 
 
@@ -13,11 +13,11 @@ There are applications like Evernote. Howver, I started my own application appro
 
 Recently I decided to build the application from scratch again. This time as a single page application. I wanted to reduce the functionality to the absolute essence and have an extremely simple GUI. 
 
-##Learning Objective
+## Learning Objective
 
 I wanted to use this application as an opportunity to improve my coding skills as I did not code for a while. I started to use IntelliJ instead of Netbeans and will use soon Elasticsearch in parallel to MySQL
 
-##Architecture
+## Architecture
 
 The single page application is organized in a simple way:
 
@@ -34,7 +34,7 @@ On the backend a simple layer architecture is used. Almost all communication bet
 - the handlers are then talking to a business layer where the business logic for a specific request is defined
 - the business layer uses the data access layer to communicate with the database and the file system. 
 
-##Roadmap
+## Roadmap
 
 I use the application each and every day. To use it even more, a few modifications need to be made: 
 
