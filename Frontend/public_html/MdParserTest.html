@@ -1,0 +1,209 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+    <head>
+
+        <style>
+
+            TEXTAREA.f_dataform{
+                width: 700px;
+                height: 500px;
+                border-bottom: #888888 1px solid;
+                border-left: #888888 1px solid;
+                border-top: #888888 1px solid;
+                border-right: #888888 1px solid;
+                padding : 15px;
+            }
+
+
+        </style>
+
+
+
+
+        <script type="text/javascript">
+            /* <![CDATA[ */
+
+
+            function MdParser() {
+
+                var sourceElement;
+                var targetElement;
+
+                this.setSourceAndTarget = function (source, target) {
+                    sourceElement = source;
+                    targetElement = target;
+                }
+
+                this.process = function () {
+                    var obj = document.getElementById(sourceElement);
+                    this.onChFrmBack(obj);
+                }
+
+                this.onChFrmBack = function (obj) {
+
+                    var content = obj.value;
+                    var contentArr = content.split("\n");
+                    var arrayLength = contentArr.length;
+                    var tmpString;
+                    var tstString;
+
+                    var enumFlag;
+                    var bulletFlag;
+
+
+
+                    for (var i = 0; i < arrayLength; i++) {
+                        contentArr[i] = contentArr[i].trim();
+
+                        //now check for first character
+                        tmpString = contentArr[i];
+                        if (tmpString.length > 0) {
+                            tstString = tmpString.substring(0, 1);
+
+                            switch (tstString) {
+                                case "!":
+                                    //code block
+                                    tmpString = this.exclamationMark(tmpString);
+                                    break;
+                                case "#":
+                                    //code block
+                                    // if the flag for enumeration was off  then add the opening tag
+                                    break;
+                                case "-":
+                                    // if the flag for bullet  was off  then add the opening tag
+                                    //code block
+                                    break;
+                                case "'":
+                                    // this is the case if we completely need to ignore any processing  - it is the "  '  "   sign
+                                    // if the flag for bullet or enumeration  or table etc. was on then add the closing tag
+                                    //code block
+                                    break;
+                                case "|":
+                                    // this is the case if we ahve a table. this is the start of a table. then we first split alongside the | and then later within the strings we split by whitespace
+                                    //code block
+                                    break;
+                                default:
+                                    // if the flag for bullet or enumeration was on then add the closing tag
+                                    // then set flags off
+                                    //default code block
+                            }
+
+                            // now detect HREFs in line
+                            // we split the sring along the whitespaces. then we check if there is .com etc. and then we test if it starts with www o http and depending on this
+                            // we add the missing piece and wrap it in a href or a javascript function that makes it opening in new window using the <span> tag
+
+
+                            // now detect Tables in line with | sign
+                            // we split 
+
+                            contentArr[i] = tmpString;
+                        }
+                        // if the flags are still switched on, then we need to close now. 
+                    }
+
+                    content = "";
+
+                    for (var i = 0; i < arrayLength; i++) {
+                        content += contentArr[i] + "<br>";
+                    }
+
+                    document.getElementById(targetElement).innerHTML = content;
+
+
+                }
+
+                // -------------------
+
+                this.exclamationMark = function (s) {
+
+                    var tstString;
+                    var ret = "";
+
+                    // maybe better to user the <span> tag ???? 
+
+                    if (s.length > 0) {
+                        tstString = s.substring(0, 1);
+                        if (tstString == "!")
+                            ret = "<b>" + s.substring(1, s.length - 1) + "</b>"
+                    }
+
+                    if (s.length > 1) {
+                        tstString = s.substring(0, 2);
+                        if (tstString == "!!")
+                            ret = "<b><big>" + s.substring(2, s.length - 2) + "</big><b>"
+                    }
+
+
+                    if (s.length > 2) {
+                        tstString = s.substring(0, 3);
+                        if (tstString == "!!!")
+                            ret = "<b><big><big>" + s.substring(3, s.length - 3) + "</big></big><b>"
+                    }
+
+
+                    return ret;
+
+                }
+            }
+
+            /* ]]> */
+        </script>
+
+
+        <script type="text/javascript">
+            /* <![CDATA[ */
+
+            var Parser = new MdParser();
+            Parser.setSourceAndTarget("comment","calendarAlert");
+
+            /* ]]> */
+        </script>
+
+
+
+    </head>
+
+
+    <body  class=''  onload='dataLoadMailList();' >
+        <pre>
+allowed:
+    !   bold
+    !!  bold and underline
+    !!! maximum headlines
+    -   for bullet points
+    #   for numbered bullets
+    '   for ignoring the whole line
+    |   for table
+
+
+        </pre>
+
+
+        <textarea id="comment" name="comment" class="f_dataform" onchange="Parser.process()" oninput="Parser.process()" onclick="Parser.process()" onfocus="Parser.process()"  >London Luton Airport</textarea>
+
+        <br>
+            <br>
+
+                <div id='calendarAlert' class='calendarAlertClass'></div>
+
+
+                dddddddddddd
+                <div id="chartContainer">222222222222222
+                    <script src="/lib/d3.v3.4.8.js"></script>
+                    <script src="http://dimplejs.org/dist/dimple.v2.1.6.min.js"></script>
+                    <script type="text/javascript">
+            var svg = dimple.newSvg("#chartContainer", 590, 400);
+            d3.tsv("/data/example_data.tsv", function (data) {
+                var myChart = new dimple.chart(svg, data);
+                myChart.setBounds(20, 20, 460, 360)
+                myChart.addMeasureAxis("p", "Unit Sales");
+                myChart.addSeries("Owner", dimple.plot.pie);
+                myChart.addLegend(500, 20, 90, 300, "left");
+                myChart.draw();
+            });
+                    </script>
+                </div>
+
+
+                </body>
