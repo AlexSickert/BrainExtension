@@ -22,7 +22,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-        CheckUrl.checkUrl();
+//        CheckUrl.checkUrl();
 
         String path;
 
@@ -68,13 +68,15 @@ public class Main {
 //        con.test();
 
         // start http server
-        SimpleHttpServer httpServer = new SimpleHttpServer();
-
-        httpServer.Start(port);
+//        SimpleHttpServer httpServer = new SimpleHttpServer();
+//        httpServer.Start(port);
 
         // start https server
-//		SimpleHttpsServer httpsServer = new SimpleHttpsServer();
-//		httpsServer.Start(port);
+		SimpleHttpsServer httpsServer = new SimpleHttpsServer();
+		httpsServer.Start(port);
+
+
+
 //		System.out.println(System.getProperty("user.dir"));
 //		System.out.println(Main.class.getClassLoader().getResource("").getPath());
     }
