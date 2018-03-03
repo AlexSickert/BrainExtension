@@ -1,3 +1,16 @@
+/*
+
+
+To generate a keystore:
+
+		$ keytool -genkey -alias alias -keypass simulator \
+		-keystore lig.keystore -storepass simulator
+
+
+		keytool -genkey -alias alias -keypass p0NvCgSuw1e9dgkbq9NRQALMP -keystore brainextension.keystore -storepass p0NvCgSuw1e9dgkbq9NRQALMP
+
+*/
+
 package server;
 
 import Log.Log;
@@ -31,16 +44,25 @@ public class SimpleHttpsServer {
 		try {
 			this.port = port;
 			// load certificate
+            // brainextension.keystore
+
 			String keystoreFilename = getPath() + "mycert.keystore";
+//            String keystoreFilename = getPath() + "brainextension3.keystore";
+
+//			char[] storepass = "p0NvCgSuw1e9dgkbq9NRQALMP".toCharArray();
+//			char[] keypass = "p0NvCgSuw1e9dgkbq9NRQALMP".toCharArray();
+
 			char[] storepass = "mypassword".toCharArray();
 			char[] keypass = "mypassword".toCharArray();
+
+
 			String alias = "alias";
 			FileInputStream fIn = new FileInputStream(keystoreFilename);
 			KeyStore keystore = KeyStore.getInstance("JKS");
 			keystore.load(fIn, storepass);
 			// display certificate
-//			Certificate cert = keystore.getCertificate(alias);
-//			System.out.println(cert);
+			Certificate cert = keystore.getCertificate(alias);
+			System.out.println(cert);
 
 			// setup the key manager factory
 			KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
@@ -77,10 +99,16 @@ public class SimpleHttpsServer {
 			});
 
 			Log.log("info", "Https server started at " + port);
+
 			server.createContext("/", new Handlers.RootHandler());
 			server.createContext("/echoHeader", new Handlers.EchoHeaderHandler());
+			server.createContext("/jsOrCssFile", new Handlers.EchoGetHandler());
 			server.createContext("/echoGet", new Handlers.EchoGetHandler());
-			server.createContext("/echoPost", new Handlers.EchoPostHandler());
+			server.createContext("/post", new Handlers.EchoPostHandler());
+			// Handler for handling file uploads
+			server.createContext("/file", new Handlers.FilePostHandler());
+			server.createContext("/fileDownload", new Handlers.GetFileDownloadHandler());
+
 			server.setExecutor(null);
 			server.start();
 		} catch (IOException e) {
