@@ -35,12 +35,19 @@ import com.sun.net.httpserver.HttpsConfigurator;
 import com.sun.net.httpserver.HttpsParameters;
 import com.sun.net.httpserver.HttpsServer;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+
 public class SimpleHttpsServer {
 	private int port;
 	private HttpsServer server;
 	private static String protocol = "TLS";
 
 	public void Start(int port) {
+
+		ExecutorService   executor;
+
+
 		try {
 			this.port = port;
 			// load certificate
@@ -109,7 +116,11 @@ public class SimpleHttpsServer {
 			server.createContext("/file", new Handlers.FilePostHandler());
 			server.createContext("/fileDownload", new Handlers.GetFileDownloadHandler());
 
-			server.setExecutor(null);
+			// use thread pool
+			executor = Executors.newFixedThreadPool(20);
+			server.setExecutor(executor);
+
+
 			server.start();
 		} catch (IOException e) {
 			e.printStackTrace();
