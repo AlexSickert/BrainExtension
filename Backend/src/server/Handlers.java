@@ -121,11 +121,14 @@ public class Handlers {
 //                response += key + " = " + parameters.get(key) + "\n";
 //            }
 //            
+            Logger.log("info", "load file");
             String fileToLoad = (String) parameters.get("file");
             FileActions u = new FileActions();
             String response = u.getFileAsString(Main.pathToClientFiles + fileToLoad);
 
 //            Logger.log("info", response);
+
+            Logger.log("info", "prepare response");
 
             he.setAttribute("Content-Type", "application/javascript");
 
@@ -133,8 +136,11 @@ public class Handlers {
             // he.setAttribute("Content-Type", "application/javascript");           
 
             OutputStream os = he.getResponseBody();
+            Logger.log("info", "write response");
             os.write(response.toString().getBytes());
             os.close();
+            Logger.log("info", "response sent");
+            Logger.log("info", "------------------------------------------");
         }
 
     }
