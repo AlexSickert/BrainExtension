@@ -309,4 +309,28 @@ public class XmlConfigManager {
         }
         return arlRet;
     }
+
+    public HashMap getValueMap(String tagName, String key, String val) {
+        HashMap arlRet = new HashMap();
+        int l;
+        String val1;
+        String val2;
+        ArrayList currLine;
+
+        try {
+            NodeList thisNode = this.document.getElementsByTagName(tagName);
+
+            if (thisNode.getLength() != 0) {
+                l = thisNode.getLength();
+                for (int i = 0; i < l; i++) {
+                    val1 = thisNode.item(i).getAttributes().getNamedItem(key).getNodeValue();
+                    val2 = thisNode.item(i).getAttributes().getNamedItem(val).getNodeValue();
+                    arlRet.put(val1, val2);
+                }
+            }
+
+        } catch (Exception ex) {
+        }
+        return arlRet;
+    }
 }
