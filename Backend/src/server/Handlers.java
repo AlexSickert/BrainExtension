@@ -28,7 +28,7 @@ import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.concurrent.TimeUnit;
 
-import static server.Main.tmpSession;
+//import static server.Main.tmpSession;
 
 public class Handlers {
 
@@ -173,7 +173,9 @@ public class Handlers {
 //check sessiion
             String session = (String) parameters.get("s");
 
-            if (session.equals(tmpSession)) {
+            //if (session.equals(tmpSession)) {
+            if (Main.sessHan.checkSession(session)) {
+
                 if (parameters.get("c").equals("tree")) {
 
                     //get path from node
