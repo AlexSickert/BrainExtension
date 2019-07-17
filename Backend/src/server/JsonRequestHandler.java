@@ -10,7 +10,7 @@ import Util.RandomString;
 import database.BusinessLayerData;
 
 import static server.Handlers.Logger;
-import static server.Main.tmpSession;
+//import static server.Main.tmpSession;
 
 /**
  * @author xandi
@@ -26,11 +26,25 @@ public class JsonRequestHandler {
                 Log.log("info", "processObj.m is matching l ... " + processObj.m);
                 // check login
                 Log.log("info", "checking login");
-                if (processObj.u.matches("haselmax") && processObj.p.matches("fmltbia")) {
+
+                boolean logInOk = false;
+
+                if(Main.userMap.containsKey(processObj.u)){
+                    String pass = (String) Main.userMap.get(processObj.u);
+                    if(processObj.p.matches(pass)){
+                        logInOk = true;
+                    }else{
+                        Log.log("info", "password wrong: " + processObj.p);
+                    }
+                }else{
+                    Log.log("info", "user does not exist: " + processObj.u);
+                }
+
+                if (logInOk) {
                     processObj.e = "OK";
-                    tmpSession = RandomString.getString(25);
-                    processObj.s = tmpSession;
-//                    processObj.s = "xxx";
+
+                    processObj.s = Main.sessHan.get_session();
+
                 } else {
                     processObj.e = "Error: login failed";
                 }
@@ -39,13 +53,12 @@ public class JsonRequestHandler {
                 Log.log("info", "checking session");
                 Log.log("info", "session is: " + processObj.s);
 
-                // next line is a hard coded session !!! 
-                if (processObj.s.matches(tmpSession)) {
+                if (Main.sessHan.checkSession(processObj.s)) {
 
                     // her we process everything else
                     Log.log("info", "processObj.m: " + processObj.m);
 
-                    if (processObj.m.matches("t")) {  // t stands for TREE
+                    if (processObj.m.matches("t")) {  // t stands for module TREE
 
                         Log.log("info", "we are in if (processObj.m.matches(\"t\")) { ");
 
