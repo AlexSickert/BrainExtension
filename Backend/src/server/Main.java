@@ -3,6 +3,9 @@ package server;
 import Log.Log;
 import Util.CheckUrl;
 import database.DataAccess;
+import database.SessionHandler;
+
+import java.util.HashMap;
 
 public class Main {
 
@@ -16,8 +19,13 @@ public class Main {
     public static String dbConnString;
     public static String acceptedAddress;
     public static String pathFragmentLegacy;
+    public static HashMap userMap;
 
-    public static String tmpSession = "";  // this is just for temporary usage !!!!
+    //public static String tmpSession = "";  // this is just for temporary usage !!!!
+
+    public static SessionHandler sessHan = new SessionHandler();
+
+
 
 
     public static void main(String[] args) {
@@ -45,6 +53,8 @@ public class Main {
 
         XmlConfigManager config = new XmlConfigManager(path + "BrainExtensionServerConfig.xml");
 
+        sessHan.loadFromFile();
+
         pathToClientFiles = config.getValue("pathToClientFiles");
         pathToUploadFiles = config.getValue("pathToUploadFiles");
         dbUser = config.getValue("dbUser");
@@ -53,6 +63,8 @@ public class Main {
         pathFragmentLegacy = config.getValue("pathFragmentLegacy");
 
         acceptedAddress = config.getValue("acceptedAddress");
+
+        userMap = config.getValueMap("user", "user_name", "user_pass");
 
 
         Log.set(true, true, true, true);
