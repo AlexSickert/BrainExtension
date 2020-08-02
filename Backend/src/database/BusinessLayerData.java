@@ -7,13 +7,17 @@ package database;
 
 import Log.Log;
 import Util.FileActions;
+import Util.RandomString;
 import Util.StringCorrection;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
+
+import server.JsonCrmRequest;
 import server.JsonRequest;
 import server.Main;
 //import org.apache.commons.codec.binary.Base64;
@@ -21,10 +25,450 @@ import server.Main;
 //import java.util.Base64;
 
 /**
- *
  * @author xandi
  */
 public class BusinessLayerData {
+
+    public void checkExistTables() {
+
+        String sql_DELETE_TABLE = "DROP TABLE  crm_contacts ;";
+
+
+        String sql_1 = "CREATE TABLE IF NOT EXISTS crm_contacts (\n" +
+                "\n" +
+                "\tID INT AUTO_INCREMENT PRIMARY KEY,\n" +
+                "\ttitle VARCHAR(250),\n" +  // name of person
+                "\ttitle_phonetic VARCHAR(250),\n" +  // name of person that that we can find duplicates
+                "\tshort_info VARCHAR(250) default '',\n" +  // name of person
+                "\tcategory_tag VARCHAR(250) default '',\n" +  // source, network, recruiter, company, wmnzd
+                //"\tpriority VARCHAR(250),\n" +  // priority, but we ahve already watch list...
+                "\tlocation VARCHAR(250) default '',\n" + // tags of location
+                "\ttopic_tags VARCHAR(250) default '',\n" + // tags of topics like recruiter, platform,
+                "\tcloseness  TINYINT  default 0,  \n" +  // close friends = 1, work colleaugues = 2, in life met = 3, other = 4
+
+                "\taction VARCHAR(250) default '', -- what next action will be\n" +
+                "\taction_time BIGINT default 0,  -- when next action should take place\n" +
+
+                "\tcompany_tags VARCHAR(250) default '',\n" + // tags of companies where contact worked ciklum, evolvice, ...
+
+                "\twatch_list  TINYINT  default 0,  -- yes no\n" +  // to be used like a prio list
+                "\tprocessing_info  TINYINT  default 0,  \n" +  // 0 = clean, 1=was merged into new, 2 = merged from others, 3 = deleted/hide
+                "\tcomment TEXT, \n" +   // long text
+
+                "\tjson_data TEXT, \n" +   // can store history of all other fields
+
+                "\temail_1 VARCHAR(100) default '',\n" +
+                "\temail_2 VARCHAR(100) default '',\n" +
+
+                "\tinstagram VARCHAR(250) default '',\n" +
+                "\tfacebook VARCHAR(250) default '',\n" +
+                "\tfacebook_messenger VARCHAR(250) default '',\n" +
+                "\tlinkedin VARCHAR(250),\n" +
+                "\txing VARCHAR(250) default '',\n" +
+                "\tweb_1 VARCHAR(250) default '',\n" +
+                "\tweb_2 VARCHAR(250) default '',\n" +
+                "\tviber VARCHAR(250) default '',\n" +
+
+                "\twhatsapp VARCHAR(250) default '',\n" +
+                "\ttelegram VARCHAR(250) default '',\n" +
+                "\tphone_1 VARCHAR(250) default '',\n" +
+                "\tphone_2 VARCHAR(250) default '',\n" +
+
+                "\tdu_sie VARCHAR(5) default '',\n" +  //
+                "\tgender VARCHAR(2) default '',\n" +  //  m, f, d,
+                "\tsalutation VARCHAR(100) default '',\n" +  // for paper letter Sehr geehrter Herr xxx
+                "\tpostal_address VARCHAR(250) default '',\n" +   // for paper letters
+
+                "\tsource VARCHAR(250) default '',\n" +
+                "\tlast_visit_date BIGINT default 0,\n" +  // last date we looked at the contact
+                "\tadded_when BIGINT default 0, -- read only for sorting\n" +
+                "\tlast_edit BIGINT default 0,  -- read only for sorting\n" +
+                "\tlist_ids VARCHAR(250) default '',  -- to make refernces to the list\n" +
+                "\tgoogle_spreadsheet_id VARCHAR(50) default ''  -- read only\n" +
+                "\n" +
+                ");";
+
+
+        String sql_3 = "CREATE TABLE IF NOT EXISTS crm_actions (\n" +
+                "\n" +
+                "\tID INT AUTO_INCREMENT PRIMARY KEY,\n" +
+                "\tcontacts_id BIGINT, \n" +  // reference to contacts
+                "\tstatus  TINYINT,  \n" +  // 1 = todo, 2 = doing, 3 = done
+                "\tnext_action_date BIGINT, \n" +  // where we can choose +1 +3 +7 +30 + 180 +rnd
+                "\tcomment TEXT \n" +  // free text to add
+
+                "\n" +
+                ");";
+
+
+        String sql_2 = "CREATE TABLE IF NOT EXISTS crm_changes (\n" +
+                "\n" +
+                "\tID INT AUTO_INCREMENT PRIMARY KEY,\n" +
+                "\tcontacts_id BIGINT,\n" +
+                "\ttime_stamp BIGINT,\n" +
+                "\tfield_name VARCHAR(250),\n" +
+                "\tnew_value TEXT\n" +
+                "\n" +
+                ");";
+
+        try {
+            DataAccess da = new DataAccess();
+            //da.executeStatement(sql_DELETE_TABLE);
+            da.executeStatement(sql_1);
+            da.executeStatement(sql_2);
+            da.executeStatement(sql_3);
+            Log.log("info", " table existing check all OK ");
+        } catch (Exception x) {
+            Log.log("error", x.getMessage());
+
+        }
+
+    }
+
+
+    public ArrayList uploadCrmBulkContacts(String s){
+
+        /*
+        *
+        *   whitespace handing    String after = before.trim().replaceAll(" +", " ");
+        *
+        *   Todo: use the extra field for phonetic sound of names and convert from cyrillic
+        *
+        *   when upload new then need to check if name already exists, and if yes we update. but when update we check if
+        *   this content already exists in the field. for this we separate by ";" semicolon. otherwise we append after a
+        *   semicolon if theres is already content. by that we prevent pusshing the same content more than once
+        *
+        *
+        *
+        *
+        * */
+
+
+
+        String lines[] = s.split("\n");
+
+        // line one must have the fields
+        String field_names[] = lines[0].split("\t");
+
+        ArrayList ret = new ArrayList();
+
+        for(int i = 1; i < lines.length; i++){
+
+            String id_str = createCrmContact();
+            int id = Integer.parseInt(id_str);
+
+            String line[] = lines[i].split("\t");
+
+            for(int x = 0; x < field_names.length; x++){
+                String field_name = field_names[x];
+                String field_value = (String) line[x];
+                if(! field_name.toLowerCase().trim().equals("id")){
+                    this.updateCrmContact(id_str, field_name, field_value);
+                }
+
+            }
+
+            ret.add("added contact with id " + id_str);
+
+        }
+
+        return ret;
+
+
+    }
+
+    public ArrayList loadCrmContacts(JsonCrmRequest processObj){
+
+        //this.createCrmContact();
+        //this.createCrmContact();
+        //this.createCrmContact();
+
+        String sql = "SELECT * FROM crm_contacts WHERE 1=1 ";
+
+        if (processObj.filter_4_value.length() > 0){
+
+            sql += " AND watch_list = " + processObj.filter_4_value + "";  // is tiny int numeric value
+        }
+
+        if (processObj.filter_3_value.length() > 0){
+
+            sql += " AND closeness = " + processObj.filter_3_value + "";  // is tiny int numeric value
+        }
+
+        if (processObj.filter_2_value.length() > 0){
+
+            sql += " AND category_tag like '%" + processObj.filter_2_value.trim() + "%' ";  // is string
+        }
+
+        if (processObj.filter_1_value.length() > 0){
+
+            sql += " AND ( ";  // is string
+            sql += " title like '%" + processObj.filter_1_value.trim() + "%' ";  // is string
+            sql += " OR short_info like '%" + processObj.filter_1_value.trim() + "%' ";  // is string
+            sql += " OR location like '%" + processObj.filter_1_value.trim() + "%' ";  // is string
+            sql += " OR category_tag like '%" + processObj.filter_1_value.trim() + "%' ";  // is string
+            sql += " OR action like '%" + processObj.filter_1_value.trim() + "%' ";  // is string
+            sql += " OR topic_tags like '%" + processObj.filter_1_value.trim() + "%' ";  // is string
+            sql += " OR company_tags like '%" + processObj.filter_1_value.trim() + "%' ";  // is string
+            sql += " OR instagram like '%" + processObj.filter_1_value.trim() + "%' ";  // is string
+            sql += " OR email_1 like '%" + processObj.filter_1_value.trim() + "%' ";  // is string
+            sql += " OR email_2 like '%" + processObj.filter_1_value.trim() + "%' ";  // is string
+            sql += " OR facebook like '%" + processObj.filter_1_value.trim() + "%' ";  // is string
+            sql += " OR linkedin like '%" + processObj.filter_1_value.trim() + "%' ";  // is string
+            sql += " OR xing like '%" + processObj.filter_1_value.trim() + "%' ";  // is string
+            sql += " OR web_1 like '%" + processObj.filter_1_value.trim() + "%' ";  // is string
+            sql += " OR web_2 like '%" + processObj.filter_1_value.trim() + "%' ";  // is string
+            sql += " OR viber like '%" + processObj.filter_1_value.trim() + "%' ";  // is string
+            sql += " OR whatsapp like '%" + processObj.filter_1_value.trim() + "%' ";  // is string
+            sql += " OR telegram like '%" + processObj.filter_1_value.trim() + "%' ";  // is string
+            sql += " OR phone_1 like '%" + processObj.filter_1_value.trim() + "%' ";  // is string
+            sql += " OR phone_2 like '%" + processObj.filter_1_value.trim() + "%' ";  // is string
+            sql += " OR source like '%" + processObj.filter_1_value.trim() + "%' ";  // is string
+            sql += " OR comment like '%" + processObj.filter_1_value.trim() + "%' ";  // is string
+            sql += " ) ";  // is string
+        }
+
+
+        if (processObj.filter_5_value.length() > 0){
+
+            sql += " ORDER BY " + processObj.filter_5_value.trim() + " ";  // is string
+        }
+
+        sql += " LIMIT 300;";
+
+        Log.log("info", sql);
+
+
+        ArrayList arl = new ArrayList();
+
+        try {
+            DataAccess da = new DataAccess();
+
+            ResultSet rs = da.getResultSet(sql);
+
+            while (rs.next()) {
+
+                HashMap m = new HashMap();
+                m.put("ID", rs.getString("ID"));
+                m.put("title", rs.getString("title"));
+                m.put("short_info", rs.getString("short_info") + "");
+                m.put("location", rs.getString("location") + "");
+                m.put("topic_tags", rs.getString("topic_tags") + "");
+                m.put("closeness", rs.getString("closeness") + "");
+                arl.add(m);
+            }
+
+            da.closeConn();
+
+            Log.log("info", " loadCrmContacts all OK ");
+        } catch (Exception x) {
+            Log.log("error", x.getMessage());
+
+        }
+
+        return arl;
+
+
+    }
+
+
+    public ArrayList loadCrmOneContact(String id){
+
+        //this.createCrmContact();
+        //this.createCrmContact();
+        //this.createCrmContact();
+
+        String sql = "SELECT * FROM crm_contacts where id = " + id;
+
+        ArrayList arl = new ArrayList();
+
+        try {
+            DataAccess da = new DataAccess();
+
+            ResultSet rs = da.getResultSet(sql);
+
+            while (rs.next()) {
+
+                HashMap m = new HashMap();
+                m.put("ID", rs.getString("ID"));
+                m.put("title", rs.getString("title"));
+                m.put("short_info", rs.getString("short_info") + "");
+                m.put("location", rs.getString("location") + "");
+                m.put("category_tag", rs.getString("category_tag") + "");
+                m.put("topic_tags", rs.getString("topic_tags") + "");
+                m.put("closeness", rs.getString("closeness") + "");
+                m.put("company_tags", rs.getString("company_tags") + "");
+                m.put("watch_list", rs.getString("watch_list") + "");
+                m.put("processing_info", rs.getString("processing_info") + "");
+                m.put("comment", rs.getString("comment") + "");
+                m.put("email_1", rs.getString("email_1") + "");
+                m.put("email_2", rs.getString("email_2") + "");
+                m.put("instagram", rs.getString("instagram") + "");
+                m.put("facebook", rs.getString("facebook") + "");
+                m.put("facebook_messenger", rs.getString("facebook_messenger") + "");
+                m.put("linkedin", rs.getString("linkedin") + "");
+                m.put("xing", rs.getString("xing") + "");
+                m.put("web_1", rs.getString("web_1") + "");
+                m.put("web_2", rs.getString("web_2") + "");
+                m.put("viber", rs.getString("viber") + "");
+                m.put("whatsapp", rs.getString("whatsapp") + "");
+                m.put("telegram", rs.getString("telegram") + "");
+                m.put("phone_1", rs.getString("phone_1") + "");
+                m.put("phone_2", rs.getString("phone_2") + "");
+                m.put("du_sie", rs.getString("du_sie") + "");
+                m.put("gender", rs.getString("gender") + "");
+                m.put("salutation", rs.getString("salutation") + "");
+                m.put("postal_address", rs.getString("postal_address") + "");
+                m.put("source", rs.getString("source") + "");
+                m.put("action", rs.getString("action") + "");
+                m.put("action_time", rs.getString("action_time") + "");
+
+                arl.add(m);
+            }
+
+            da.closeConn();
+
+            Log.log("info", " loadCrmContacts all OK ");
+        } catch (Exception x) {
+            Log.log("error", x.getMessage());
+
+        }
+
+        return arl;
+
+
+    }
+
+
+
+    public String createCrmContact() {
+
+        String rnd = RandomString.getString(50);
+        String ret = "";
+
+        String sql = "INSERT INTO crm_contacts (" +
+                "`title`" +
+                ") values (" +
+                "'" + rnd + "'" +
+                ")";
+
+        String sql_2 = "SELECT ID FROM crm_contacts WHERE `title` = '" + rnd + "';";
+
+        try {
+            DataAccess da = new DataAccess();
+            da.executeStatement(sql);
+            ret = da.getFirstStringValue(sql_2);
+            Log.log("info", " createCrmContact all OK ");
+        } catch (Exception x) {
+            Log.log("error", x.getMessage());
+
+        }
+
+        return ret;
+    }
+
+//
+//    public void XXXXXinsertCrmContact(JsonCrmRequest obj) {
+//
+//        String sql = "INSERT INTO crm_contacts (" +
+//                "`category`," +
+//                "`title`," +
+//                "`location`," +
+//                "`status`," +
+//                "`last_action`," +
+//                "`next_action_date`," +
+//                "`prio`," +
+//                "`watch_list`," +
+//                "`comment`," +
+//                "`action_history`," +
+//                "`email_1`," +
+//                "`email_2`," +
+//                "`instagram`," +
+//                "`facebook`," +
+//                "`xing`," +
+//                "`linkedin`," +
+//                "`web_1`," +
+//                "`web_2`," +
+//                "`phone_1`," +
+//                "`phone_2`," +
+//                "`source`," +
+//                "`added_when`," +
+//                "`last_edit`," +
+//                "`list_ids`," +
+//                "`google_spreadsheet_id`" +
+//                ") values (" +
+//                "`" + obj.category + "`," +
+//                "`" + obj.title + "`," +
+//                "`" + obj.location + "`," +
+//                "`" + obj.status + "`," +
+//                "`" + obj.last_action + "`," +
+//                "`" + obj.next_action_date + "`," +
+//                "`" + obj.prio + "`," +
+//                "`" + obj.watch_list + "`," +
+//                "`" + obj.comment + "`," +
+//                "`" + obj.action_history + "`," +
+//                "`" + obj.email_1 + "`," +
+//                "`" + obj.email_2 + "`," +
+//                "`" + obj.instagram + "`," +
+//                "`" + obj.facebook + "`," +
+//                "`" + obj.xing + "`," +
+//                "`" + obj.linkedin + "`," +
+//                "`" + obj.web_1 + "`," +
+//                "`" + obj.web_2 + "`," +
+//                "`" + obj.phone_1 + "`," +
+//                "`" + obj.phone_2 + "`," +
+//                "`" + obj.source + "`," +
+//                "`" + obj.added_when + "`," +
+//                "`" + obj.last_edit + "`," +
+//                "`" + obj.list_ids + "`," +
+//                "`" + obj.google_spreadsheet_id + "`" +
+//                ")";
+//
+//
+//        try {
+//            DataAccess da = new DataAccess();
+//            da.executeStatement(sql);
+//            Log.log("info", " insertCrmContact all OK ");
+//        } catch (Exception x) {
+//            Log.log("error", x.getMessage());
+//
+//        }
+//
+//    }
+
+    public String updateCrmContact(String id, String field, String value) {
+
+        String valueType = "";
+        String errorStr = "";
+
+        try {
+            DataAccess da = new DataAccess();
+
+            switch (field) {
+
+                case "title":
+                    valueType = "string";
+                    break;
+                default:
+                    valueType = "string";
+
+            }
+
+            da.updateTableViaPreparedStatement("crm_contacts", field, Integer.parseInt(id), valueType, value);
+
+            Log.log("info", " insertCrmContact all OK ");
+        } catch (Exception x) {
+            Log.log("error", x.getMessage());
+            errorStr = x.getMessage();
+
+        }
+
+
+        return errorStr;
+
+
+    }
+
 
     public JsonRequest getNode(JsonRequest j) {
 

@@ -184,7 +184,7 @@ function BeDataAccess() {
         req.send(obj);
         return;
     };
-    
+
 
     this.getAnchestors = function (con, session, idNode, idHtml) {
         var r = new AnchestorsRequest(session, idNode, idHtml);
@@ -204,7 +204,7 @@ function BeDataAccess() {
         req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
         req.send(obj);
         return;
-    };    
+    };
 
     // create a new child node and then load the whole list of children
     this.makeChildNode = function (con, session, idNode, idHtml) {
@@ -307,6 +307,156 @@ function BeDataAccess() {
 
         var obj = encodeURIComponent(JSON.stringify(r));
         req.open("POST", "post", true);
+        req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        req.send(obj);
+        return;
+    };
+
+
+    this.loadCrm = function (con, session, search, category, close, watch, sort) {
+
+        // search.trim(), category.trim(), close.trim(), watch.trim()
+        // dataAccess.loadCrm(this, globalSession, search.trim(), category.trim(), close.trim(), watch.trim());
+
+        var r = new CrmLoadRequest(session, "load");
+        //r.rowId = id;
+
+        r.filter_1_field = "search";
+        r.filter_1_value = search;
+        r.filter_1_logic = "search";
+
+        r.filter_2_field = "category";
+        r.filter_2_value = category;
+        r.filter_2_logic = "like";
+
+        r.filter_3_field = "closeness";
+        r.filter_3_value = close;
+        r.filter_3_logic = "equal";
+
+        r.filter_4_field = "watchlist";
+        r.filter_4_value = watch;
+        r.filter_4_logic = "equal";
+        
+        r.filter_5_field = "sort";
+        r.filter_5_value = sort;
+        r.filter_5_logic = "sort";
+
+        var req = new BeAjaxRequest();
+
+        /*
+         * now we define the general call back function
+         */
+        req.onreadystatechange = function () {
+            if (req.readyState === 4) {
+                var resObj = JSON.parse(req.responseText);
+                con.callBack(resObj);
+            }
+        };
+
+        var obj = encodeURIComponent(JSON.stringify(r));
+        req.open("POST", "crm", true);
+        req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        req.send(obj);
+        return;
+    };
+
+
+    this.loadCrmOneContact = function (con, session, id) {
+
+        var r = new CrmLoadRequest(session, "loadOne");
+        r.rowId = id;
+
+        var req = new BeAjaxRequest();
+
+        /*
+         * now we define the general call back function
+         */
+        req.onreadystatechange = function () {
+            if (req.readyState === 4) {
+                var resObj = JSON.parse(req.responseText);
+                con.callBack(resObj);
+            }
+        };
+
+        var obj = encodeURIComponent(JSON.stringify(r));
+        req.open("POST", "crm", true);
+        req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        req.send(obj);
+        return;
+    };
+
+
+    this.uploadNew = function (con, session, txt) {
+
+        var r = new CrmLoadRequest(session, "newData");
+        r.newData = txt;
+
+        var req = new BeAjaxRequest();
+
+        /*
+         * now we define the general call back function
+         */
+        req.onreadystatechange = function () {
+            if (req.readyState === 4) {
+                var resObj = JSON.parse(req.responseText);
+                con.callBack(resObj);
+            }
+        };
+
+        var obj = encodeURIComponent(JSON.stringify(r));
+        req.open("POST", "crm", true);
+        req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        req.send(obj);
+        return;
+
+    }
+
+
+    this.uploadNew = function (con, session, txt) {
+
+        var r = new CrmLoadRequest(session, "newData");
+        r.newData = txt;
+
+        var req = new BeAjaxRequest();
+
+        /*
+         * now we define the general call back function
+         */
+        req.onreadystatechange = function () {
+            if (req.readyState === 4) {
+                var resObj = JSON.parse(req.responseText);
+                con.callBack(resObj);
+            }
+        };
+
+        var obj = encodeURIComponent(JSON.stringify(r));
+        req.open("POST", "crm", true);
+        req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        req.send(obj);
+        return;
+
+    };
+
+
+    // load one result CrmLoadRequest(session, action)
+    this.updateCrmContact = function (con, session, id, field, val) {
+
+        var r = new CrmLoadRequest(session, "update");
+        r.rowId = id;
+        r.fieldName = field;
+        r.fieldValue = val;
+
+        var req = new BeAjaxRequest();
+
+        req.onreadystatechange = function () {
+            if (req.readyState === 4) {
+                var resObj = JSON.parse(req.responseText);
+                con.callBack(resObj);
+            }
+        };
+
+        var obj = encodeURIComponent(JSON.stringify(r));
+        req.open("POST", "crm", true);
         req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
         req.send(obj);
         return;

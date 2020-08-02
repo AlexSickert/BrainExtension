@@ -68,6 +68,38 @@ public class Handlers {
 
     }
 
+    public static class BrainExtensionHandler implements HttpHandler {
+
+        //        @Override
+//        public void handle(HttpExchange he) throws IOException {
+//            Logger.log("info", "in RootHandler");
+//            String response = "<h1>Server start success if you see this message</h1>" + "<h1>Port: " + Main.port + "</h1><br><a href='./echoHeader'> link</a>";
+//            he.sendResponseHeaders(200, response.length());
+//            OutputStream os = he.getResponseBody();
+//            os.write(response.getBytes());
+//            os.close();
+//        }
+        @Override
+        public void handle(HttpExchange he) throws IOException {
+            Logger.log("info", "in RootHandler now streaming main file");
+
+            if (!CheckUrl.checkAddress(he)) {
+                Logger.log("info", "not a valid remote address");
+                return;
+            }
+
+//            String response = "<h1>Server start success if you see this message</h1>" + "<h1>Port: " + Main.port + "</h1><br><a href='./echoHeader'> link</a>";
+            FileActions u = new FileActions();
+            String response = u.getFileAsString(Main.pathToClientFiles + "brainextension.html");
+
+            he.sendResponseHeaders(200, response.length());
+            OutputStream os = he.getResponseBody();
+            os.write(response.getBytes());
+            os.close();
+        }
+
+    }
+
     public static class EchoHeaderHandler implements HttpHandler {
 
         @Override
@@ -110,7 +142,6 @@ public class Handlers {
 
             Logger.log("info", "he.getLocalAddress().toString() = " + he.getLocalAddress().toString());
             Logger.log("info", "he.getLocalAddress().getRemoteAddress() = " + he.getRemoteAddress().toString());
-
             Logger.log("info", "requestedUri is " + requestedUri);
 
             String query = requestedUri.getRawQuery();
@@ -330,9 +361,6 @@ public class Handlers {
                 return;
             }
 
-            //System.out.println("Served by /echoPost handler...");
-            // parse request
-//            Map<String, Object> parameters = new HashMap<String, Object>();
             InputStreamReader isr = new InputStreamReader(he.getRequestBody(), "utf-8");
             BufferedReader br = new BufferedReader(isr);
 //            String queryLine = br.readLine();
@@ -417,18 +445,6 @@ public class Handlers {
 
                 Logger.log("info", "================= done    ===============");
 
-//            Person person = g.fromJson("{\"name\": \"John\"}", Person.class);
-//            System.out.println(person.name); //John
-//
-//            System.out.println(g.toJson(person)); // {"name":"John"}
-                // convert JSON  to java object 
-//            parseQuery(query, parameters);
-//            // send response
-//            for (String key : parameters.keySet()) {
-//                response += key + " = " + parameters.get(key) + "\n";
-//            }
-//                he.sendResponseHeaders(200, response.length());
-                //s.getBytes("utf8").length
                 he.sendResponseHeaders(200, response.getBytes("utf8").length);
 
                 he.setAttribute(query, br);
@@ -452,6 +468,102 @@ public class Handlers {
 
             }
 
+        }
+    }
+
+
+    public static class EchoCrmHandler implements HttpHandler {
+
+        @Override
+        public void handle(HttpExchange he) throws IOException {
+
+            long startTime = System.nanoTime();
+
+            Logger.log("info", "in EchoCrmHandler");
+
+            if (!CheckUrl.checkAddress(he)) {
+                return;
+            }
+
+            InputStreamReader isr = new InputStreamReader(he.getRequestBody(), "utf-8");
+            BufferedReader br = new BufferedReader(isr);
+            String query = "";
+            String queryLine = "";
+
+            while ((queryLine = br.readLine()) != null) {
+                query += queryLine;
+            }
+
+            Logger.log("info", "================= decoding ===============");
+            query = URLDecoder.decode(query, System.getProperty("file.encoding"));
+            Logger.log("info", "================= make object ===============");
+
+            Gson g = new Gson();
+            JsonCrmRequest jasonReq = new JsonCrmRequest();
+            try {
+                jasonReq = g.fromJson(query, JsonCrmRequest.class);
+            } catch (Exception x) {
+                Logger.log("error", x.getMessage());
+                Logger.log("error", x.toString());
+            }
+
+            Logger.log("info", "================= access parameters  ===============");
+
+            try {
+                Logger.log("info  action = ", jasonReq.action);
+                Logger.log("info  session = ", jasonReq.session);
+
+            } catch (Exception x) {
+                Logger.log("error", x.getMessage());
+                Logger.log("error", x.toString());
+                x.printStackTrace();
+            }
+
+            Logger.log("info", "================= convert to json   ===============");
+//            System.out.println(g.toJson(login));
+            JsonRequestCrmHandler h = new JsonRequestCrmHandler();
+
+            //Logger.log("info", "session: " + jasonReq.s);
+            //Logger.log("info", "error status: " + jasonReq.e);  // should be status OK otherwise we have problem
+
+//             JsonRequestHandler h = new JsonRequestHandler();
+            Logger.log("info", "================= create response  ===============");
+            String response = new String();
+            try {
+
+                jasonReq = h.handle(jasonReq);
+                Logger.log("info  action = ", jasonReq.action);
+                response = g.toJson(jasonReq);
+
+//                Logger.log("info  JSON object for client is ", response.toString());
+
+            } catch (Exception x) {
+                x.printStackTrace();
+                Logger.log("error", x.getMessage());
+                Logger.log("error", x.toString());
+            } finally {
+
+                Logger.log("info", "================= done    ===============");
+
+                he.sendResponseHeaders(200, response.getBytes("utf8").length);
+
+                he.setAttribute(query, br);
+
+                OutputStream os = he.getResponseBody();
+                os.write(response.toString().getBytes());
+                os.close();
+
+                long elapsedTime = System.nanoTime() - startTime;
+                double seconds = (double) elapsedTime / 1000000000.0;
+                Logger.log("info", "handling the request in handle(HttpExchange he)  took in seconds: " + seconds);
+
+                // check status of memory - needed as we sometimes have problems with crashes...
+
+                if (System.nanoTime() - memoryTimer > 20000) {
+                    CheckMemory.dumpStatus();
+                    memoryTimer = System.nanoTime();
+                }
+            }
         }
     }
 

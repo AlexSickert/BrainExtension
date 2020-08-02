@@ -2,6 +2,7 @@ package server;
 
 import Log.Log;
 import Util.CheckUrl;
+import database.BusinessLayerData;
 import database.DataAccess;
 import database.SessionHandler;
 
@@ -76,6 +77,12 @@ public class Main {
 
         //test db
         DataAccess con = new DataAccess();
+
+        BusinessLayerData bld = new BusinessLayerData();
+        bld.checkExistTables();
+
+        Log.info(bld.createCrmContact());
+        bld.updateCrmContact("1", "title", "hello title");
 
 //        con.test();
 

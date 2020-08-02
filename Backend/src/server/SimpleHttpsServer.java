@@ -108,10 +108,12 @@ public class SimpleHttpsServer {
 			Log.log("info", "Https server started at " + port);
 
 			server.createContext("/", new Handlers.RootHandler());
+			server.createContext("/brainextension", new Handlers.BrainExtensionHandler());
 			server.createContext("/echoHeader", new Handlers.EchoHeaderHandler());
 			server.createContext("/jsOrCssFile", new Handlers.EchoGetHandler());
 			server.createContext("/echoGet", new Handlers.EchoGetHandler());
 			server.createContext("/post", new Handlers.EchoPostHandler());
+			server.createContext("/crm", new Handlers.EchoCrmHandler());
 			// Handler for handling file uploads
 			server.createContext("/file", new Handlers.FilePostHandler());
 			server.createContext("/fileDownload", new Handlers.GetFileDownloadHandler());

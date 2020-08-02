@@ -161,3 +161,42 @@ function NodeMoveOrLinkRequest(session, idNode, idParent, action, idHtml) {
     this.idHtml = idHtml; // the id of the html element and node we need to refresh
 }
 
+
+
+function CrmLoadRequest(session, action) {
+    this.m = 'c';  // module t is tree
+    this.session = session; //session 
+    this.action = action; // contetn or action we want to get
+
+    this.fieldName = "";
+    this.fieldValue = "";
+
+    this.rowId = "";
+
+    this.filter_1_field = "";
+    this.filter_1_value = "";
+    this.filter_1_logic = "";
+
+    this.filter_2_field = "";
+    this.filter_2_value = "";
+    this.filter_2_logic = "";
+
+    this.filter_3_field = "";
+    this.filter_3_value = "";
+    this.filter_3_logic = "";
+
+    this.filter_4_field = "";
+    this.filter_4_value = "";
+    this.filter_4_logic = "";
+
+    this.result = [];
+
+    this.newData = "";
+
+    this.hasError = false;
+    this.errorDescription = "";
+
+}
+
+
+

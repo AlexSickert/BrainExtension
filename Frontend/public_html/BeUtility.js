@@ -158,5 +158,27 @@ function BeUtility() {
         r = parser.parse(s, id);
         return r;
     };
+    
+    this.crmHtml = function(){
+        
+        var s = "";
+        s+= "<table  class='crm'>";
+        s+= "<tr>";
+        s+= "<td id='crmSearchResult' class='crm'>";
+        s+= "search result";
+        s+= "</td>";
+        s+= "<td id='crmSingleContact' class='crm'>";
+        s+= "single result";
+        s+= "</td>";
+        s+= "</tr>";
+        s+= "<tr>";
+        s+= "<td colspan=2 class='crm'><input type='button' value='upload new data' onclick='con.crmNewData()'></input><br>";
+        s+= "<textarea id='crmNewData' rows=20></textarea><br><dev id='newDataResult'></div>";
+        s+= "</td>";
+        s+= "</tr>";
+        s+= "</table>";
+        
+        return s;
+    }
 
 }

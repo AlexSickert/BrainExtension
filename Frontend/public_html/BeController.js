@@ -39,6 +39,13 @@ function BeController() {
         return;
     };
 
+    this.setBeNavigation = function () {
+
+        uxui.initNavigation();
+        uxui.setDefaultMain();
+
+    }
+
     // try to log in 
     /*
      * 
@@ -60,7 +67,7 @@ function BeController() {
      */
 
     this.callBack = function (responseObject) {
-        uxui.log("BeController:call back recieved");
+        uxui.log("BeController:call back recieved: " + JSON.stringify(responseObject));
 
 
         /* todo: distinguish between various response objects and handle login error
@@ -213,6 +220,27 @@ function BeController() {
         }
         ;
 
+        // fro CRM
+        if (responseObject.m === "c") {
+            if (responseObject.action === "load") {
+                uxui.setCrmResult(responseObject.result);
+            }
+
+            if (responseObject.action === "loadOne") {
+                uxui.setCrmOneResult(responseObject.result);
+            }
+
+            if (responseObject.action === "newData") {
+                uxui.setNewDataResult(responseObject.result);
+            }
+
+            if (responseObject.action === "update") {
+                if (responseObject.hasError) {
+                    alert(responseObject.errorDescription);
+                }
+            }
+        }
+
 
 
 
@@ -272,9 +300,9 @@ function BeController() {
 
     // collapseNode
     this.collapseNode = function (objStr, obj) {
-             
-        uxui.collapseTreeNode(objStr, obj);             
-          
+
+        uxui.collapseTreeNode(objStr, obj);
+
     };
 
     this.jumpToNode = function (id) {
@@ -405,6 +433,75 @@ function BeController() {
     this.showLog = function () {
         uxui.showHideLog();
     }
+
+
+    /*
+     * show the CRM
+     * @returns {undefined}
+     */
+    this.showCrm = function () {
+
+        uxui.initCrmNavigation();
+        uxui.initCrm();
+
+        // now load stuff and then set in crm content
+
+        dataAccess.loadCrm(this, globalSession);
+
+    }
+
+    this.crmNewData = function () {
+        // upload new contacts
+        var txt = util.getValue('crmNewData')
+        dataAccess.uploadNew(this, globalSession, txt);
+    }
+
+    this.updateOneContactField = function (ele, id) {
+        var val = ele.value;
+        var field = ele.id;
+        
+        if(field === "action_time"){
+            val = uxui.dateToNumber(val);
+            //alert(val);
+        }        
+        
+        dataAccess.updateCrmContact(this, globalSession, id, field, val);   //  con, session, id, field, val
+    };
+
+    this.handleLink = function (url) {
+        
+        if(! url.toLowerCase().startsWith("http")){
+            url = "http://" + url;   // http://data-yield.com/
+        }
+        
+        var win = window.open(url, '_blank');
+        win.focus();
+    };
+
+    this.crmSearch = function () {
+
+        //uxui.initCrmNavigation();
+        ///uxui.initCrm();
+
+        // now load stuff and then set in crm content
+        
+        var search = util.getValue('searchField');
+        var category = util.getValue('crmCategory');
+        var close = util.getValue('crmCloseness');
+        var watch = util.getValue('crmWatchlist');
+        var sort = util.getValue('crmSort');
+
+        dataAccess.loadCrm(this, globalSession, search.trim(), category.trim(), close.trim(), watch.trim(), sort.trim());
+
+    }
+
+    this.showOneCrmResult = function (id) {
+        // loads one result to the right part of the screen
+        dataAccess.loadCrmOneContact(this, globalSession, id);
+
+    }
+
+
     /*
      * ======================================================================
      * ======================================================================

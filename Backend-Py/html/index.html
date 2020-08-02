@@ -1,0 +1,239 @@
+
+<html>
+	
+	<head>
+	  <title>Brain Extension</title>
+	
+	  <meta charset="utf-8">
+	
+	
+	
+	  <style>
+	    html {
+	
+	    }
+	
+	    body {
+	    max-width: 100%;
+	    overflow-x: hidden;
+	      font-family: Gill Sans Extrabold, sans-serif;
+	      background-color: #ffffff;
+	      border: 0px;
+	      margin: 0px;
+	      padding: 0px;
+	    }
+	
+	    table {
+	      padding: 0px;
+	      border: 0px;
+	      width: 100%;
+	    }
+	
+	    td {
+	
+	      border: 0px;
+	      width: 50%; //background-color:rgb(206, 51, 117);
+	    }
+	
+	    td.columnheader {
+	      font-size: 20pt;
+	
+	    }
+	
+	    a {
+	      color: #444444;
+	      font-weight: bold;
+	      padding-left: 20px;
+	      padding-right: 20px;
+	    }
+	
+	    a.inline {
+	      font-size: 20pt;
+	      color: white;
+	      font-weight: bold;
+	
+	    }
+	
+	    a.button{
+	      text-decoration: none;
+	      color: white;
+	      font-weight: bold;
+	    }
+	
+	span.mainHeadline{
+	      color: #444444;
+	      font-size: 70pt;
+	}
+	
+	    span.headline {
+	      color: #444444;
+	      font-size: 50pt;
+	    }
+	
+	span.left{
+	
+		width: 100%;
+		text-align: left;
+	
+	}
+	
+	    span.normalText {
+	      color: #444444;
+	      font-size: 20pt;
+	      padding: 20px;
+	      width: 80%;
+	    }
+	
+	    span.buttonRed{
+	      border-radius: 15px;
+	      border: 10px solid #ec454c;
+	      background-color: #ec454c;
+	      font-size: 20pt;
+	
+	    }
+	
+	    span.ul {
+	
+	      text-align: left;
+	      color: #444444;
+	      font-size: 20pt;
+	
+	    }
+	
+	    div.navigation {
+	      border: 0px;
+	      width: 100%;
+	      padding: 10px;
+	      background-color: #48b657;
+	
+	      font-size: 20pt;
+	      color: white;
+	      font-weight: bold;
+	
+	
+	    }
+	
+	    div.head {
+	      border: 0px;
+	      width: 100%;
+	      padding: 20px;
+	      color: #444444;
+	      background-color: #ffffff;
+	    }
+	
+	div.mainHead{
+	      border: 0px;
+	      width: 100%;
+	      padding-left: 20px;
+	      padding-right: 20px;
+	      padding-bottom: 20px;
+	      padding-top: 70px;
+	      color: #444444;
+	      background-color: #ffffff;
+	}
+	
+	    div.white {
+	      border: 0px;
+	      width: 80%;
+	      padding-left: 10%;
+	      padding-right: 10%;
+	      padding-top: 20px;
+	      padding-bottom: 20px;
+	      background-color: #ffffff;
+	      align-items: center;
+	
+	    }
+	
+	    div.roadmap {
+	      border: 0px;
+	      width: 80%;
+	      padding: 20px;
+	      background-color: #f3d100;
+	    }
+	
+	    div.signup {
+	      border: 0px;
+	      padding-left: 50%;
+	      background-color: #ec454c;
+	    }
+	
+	    div.contact {
+	      border: 0px;
+	      width: 100%;
+	      padding: 20px;
+	      color: #444444;
+	      background-color: #f3d100;
+	    }
+	
+	div.dummyVideo{
+	
+	width: 500px;
+	height: 400px;
+	background-color: #dddddd;
+	
+	}
+	
+	    img{
+	    border: #444444 1px solid;
+	
+	    }
+	
+	div.spacer{
+	
+		width: 100%;
+		height: 1px;
+		background-color: #eeeeee;
+	
+	}
+	
+	img.image-top{
+		border: 0px solid white;
+		width: 100%;
+	}
+	
+	
+	iframe.video{
+	
+	padding: 50px;
+	}
+	
+	  </style>
+	
+</head>
+
+	
+<body>
+	
+	  
+	
+	<script>
+	
+	
+	
+	
+	window.setTimeout(changeMe, 1000);
+	
+	function changeMe(){
+	
+		x = document.getElementById("d1");
+		
+		x.innerHTML = "Date now in milliseconds: "  + Date.now().toString();
+	//x.innerHTML =  Date.now();
+	
+		window.setTimeout(changeMe, 1000);
+	}
+	
+	
+	</script>
+	
+	<center>
+<br><br><br>
+	hello I am html with a little bit of JavaScript
+<br><br><br>
+	<div id="d1">
+		start
+	</div>
+	</center>
+</body>
+
+</html>

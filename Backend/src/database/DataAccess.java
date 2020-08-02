@@ -7,21 +7,19 @@ package database;
 
 //import com.mysql.jdbc.Connection;
 //import com.mysql.jdbc.Statement;
+
 import Log.Log;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
+
+import java.sql.*;
+
 import server.Main;
 import Log.Log;
 
 /**
- *
  * @author xandi
- *
- *
+ * <p>
+ * <p>
  * prepared statements https://stackoverflow.com/questions/28686908/jdbc-pass-parameters-to-sql-query
- *
  */
 public class DataAccess {
 
@@ -70,6 +68,45 @@ public class DataAccess {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+    }
+
+    public void updateTableViaPreparedStatement(String table, String field, int rowId, String valueType, String value) {
+        try {
+            //https://docs.oracle.com/javase/tutorial/jdbc/basics/prepared.html
+            Class.forName("com.mysql.jdbc.Driver").newInstance();
+            conn = DriverManager.getConnection(Main.dbConnString + Main.dbName + "?useUnicode=true&characterEncoding=UTF-8", Main.dbUser, Main.dbPass);
+
+            String updateString = "update " + table + " set " + field + " = ? where ID = ?";
+            PreparedStatement updateSales = conn.prepareStatement(updateString);
+
+            switch (valueType.toLowerCase()) {
+
+                case "long":
+                    updateSales.setLong(1, Long.parseLong(value));
+                    break;
+
+                case "string":
+                    updateSales.setString(1, value);
+                    break;
+
+                case "int":
+                    updateSales.setInt(1, Integer.parseInt(value));
+                    break;
+            }
+
+            updateSales.setInt(2, rowId);
+            updateSales.execute();
+            updateSales.close();
+
+            this.closeConn();
+
+
+        } catch (Exception e) {
+            Log.log("info", e.toString());
+            e.printStackTrace();
+        }
+
 
     }
 
@@ -145,10 +182,10 @@ public class DataAccess {
             if (tst == null) {
                 tst = "";
             }
-            
-            
+
+
             this.closeConn();
-            
+
             return tst;
 
         } catch (Exception e) {
@@ -176,7 +213,7 @@ public class DataAccess {
             double seconds = (double) elapsedTime / 1000000000.0;
             Log.log("info", " getResultSet(String sql) took in seconds: " + seconds);
 
-//            conn.close();
+            //conn.close();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

@@ -23,7 +23,7 @@ public class JsonRequest {
     public Boolean v = false;  // editable or not
     public String value = "";  // value of a field, used for update
     public String e = "";  // error status
-    public String c = "";  // category
+    public String c = "";  // category - it is a sub-element of module m
     public String d = "";  // detail
 
     public String t = "";  // title of tree node
